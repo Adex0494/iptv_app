@@ -36,6 +36,7 @@ class HomePage extends StatefulWidget{
 }
 
 class HomePageState extends State<HomePage> {
+  GlobalKey<FormState> _formState = GlobalKey<FormState>(); 
   TextEditingController urlController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   int listCount = 0; //Count of list Items
@@ -90,9 +91,17 @@ class HomePageState extends State<HomePage> {
       );
   }
 
-  void onBottomNavBarItemTapped (int indexTapped){
-    setState(() {
-      _bottomNavigationBarIndex = indexTapped; 
+  void onBottomNavBarItemTapped (int indexTapped)async{
+       _bottomNavigationBarIndex = indexTapped; 
+      if (_bottomNavigationBarIndex !=0){
+        await updateLisView();
+        if (listCount==0){
+          _showAlertDialog('Mensaje', 'No ha añadido enlaces de este tipo.' 
+          'Puede hacerlo en la ventana de Inicio.');
+        }
+      }
+    setState((){
+   
     });
   }
 
@@ -101,110 +110,128 @@ class HomePageState extends State<HomePage> {
       return homeWidget(textStyle);
     }
     else {
-      updateLisView();
       return getLinkList(_bottomNavigationBarIndex);}
   }
 
   Widget homeWidget(TextStyle textStyle){
     return Container(
           alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(15.0),  
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              //First Element: 'Nuevo Enlace' Text
-              TextField(
-                style: textStyle,
-                controller: urlController,
-                decoration: InputDecoration(
-                  labelText: 'Nuevo Enlace',
-                  labelStyle: textStyle,
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                    ),
-                    borderRadius: BorderRadius.circular(5.0),
-                  )
-                ),
-                onChanged: (value){
-                  updateUrl();
-                },
-              ),
-              //Second element: 'Descripcion' Text
-              Padding
-              (padding: EdgeInsets.only(top: 3, bottom: 3),
-                child:TextField(
-                  style: textStyle,
-                  controller: descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Descripcion',
-                    labelStyle: textStyle,
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.white,
-                      ),
-                      borderRadius: BorderRadius.circular(5.0),
-                    )
-                  ),
-                  onChanged: (value){
-                    updateDescription();
-                  },
-                ) 
-              ),
-              
-              //Second Element: Dropdonw types of link
-              Row(
+          child: 
+            Form(
+              key: _formState,
+              child: ListView(children: <Widget>[
+                Padding(
+                padding: EdgeInsets.all(15.0),  
+                child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Expanded(
-                    child: Text('Tipo de enlace',
-                      style: textStyle,
-                    )
-                  ),
-                  Expanded(
-                    child: ListTile(
-                      title: DropdownButton(
-                        items: _linkTypes.map((String dropDownStringItem){
-                          return DropdownMenuItem<String>(
-                            value: dropDownStringItem,
-                            child: Text(dropDownStringItem)
-                          );
-                        }).toList(),
-                        style: textStyle,
-                        value:_selectedLinkType,
-                        onChanged: (valueSelectedByUser){
-                          setState(() {
-                            _selectedLinkType = valueSelectedByUser; 
-                          });
-                        },
-                        
+                  //First Element: 'Nuevo Enlace' Text
+                  TextFormField(
+                    style: textStyle,
+                    controller: urlController,
+                    validator: (String value){
+                      if (value.isEmpty){
+                        return 'Ponga el URL';
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Nuevo Enlace',
+                      labelStyle: textStyle,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(5.0),
                       )
-                    )
-                  )
-                ]
-              ),
-              //Third Element: Save Button
-              Padding (
-                padding: EdgeInsets.only(top: 15.0),
-                child:  RaisedButton(
-                  color: Theme.of(context).primaryColor,
-                  textColor: Colors.white,
-                  child: Text(
-                    'Guardar',
-                    textScaleFactor: 1.5,
+                    ),
+                    onChanged: (value){
+                      //updateUrl();
+                    },
                   ),
-                  onPressed: (){
-                    setState(() {
-                      //When the Save button is pressed... 
-                      _saveLink();
-                    });
-                  },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-              ),
-              )
-             
-            ],),
-            ),
+                  //Second element: 'Descripcion' Text
+                  Padding
+                  (padding: EdgeInsets.only(top: 3, bottom: 3),
+                    child:TextFormField(
+                      style: textStyle,
+                      controller: descriptionController,
+                      validator: (String value){
+                        if (value.isEmpty){
+                          return 'Ponga la descripción';
+                      }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Descripción',
+                        labelStyle: textStyle,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white,
+                          ),
+                          borderRadius: BorderRadius.circular(5.0),
+                        )
+                      ),
+                      onChanged: (value){
+                        //updateDescription();
+                      },
+                    ) 
+                  ),
+                  
+                  //Third Element: Dropdonw types of link
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text('Tipo de enlace',
+                          style: textStyle,
+                        )
+                      ),
+                      Expanded(
+                        child: ListTile(
+                          title: DropdownButton(
+                            items: _linkTypes.map((String dropDownStringItem){
+                              return DropdownMenuItem<String>(
+                                value: dropDownStringItem,
+                                child: Text(dropDownStringItem)
+                              );
+                            }).toList(),
+                            style: textStyle,
+                            value:_selectedLinkType,
+                            onChanged: (valueSelectedByUser){
+                              setState(() {
+                                _selectedLinkType = valueSelectedByUser; 
+                              });
+                            },
+                            
+                          )
+                        )
+                      )
+                    ]
+                  ),
+                  //Forth Element: Save Button
+                  Padding (
+                    padding: EdgeInsets.only(top: 15.0),
+                    child:  RaisedButton(
+                      color: Theme.of(context).primaryColor,
+                      textColor: Colors.white,
+                      child: Text(
+                        'Añadir',
+                        textScaleFactor: 1.5,
+                      ),
+                      onPressed: (){
+                        setState(() {
+                          //When the Save button is pressed... 
+                          if (_formState.currentState.validate()){
+                            _saveLink();
+                          }
+
+                        });
+                      },
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  )
+                
+                ],),
+                )
+              ],)
+            )
         );
   }
 
@@ -226,6 +253,9 @@ class HomePageState extends State<HomePage> {
               child: Icon(Icons.delete,color: Colors.grey),
               onTap: (){
                 //Delete Action Code 
+                setState(() {
+                   _delete(linkList[position].id);
+                });
               }
             ),
             onTap: (){
@@ -237,18 +267,15 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  void updateLisView(){
-    final Future<Database> dbFuture = databaseHelper.initializeDatabase();
-    dbFuture.then((database){
-      Future<List<Link>> futureLinkList = databaseHelper.getLinkListByType(_bottomNavigationBarIndex);
-      futureLinkList.then((linkList){
+  void updateLisView()async{
+      await databaseHelper.initializeDatabase();
+      List<Link> theLinkList = await databaseHelper.getLinkListByType(_bottomNavigationBarIndex);
         setState(() {
-          this.linkList = linkList;
-          this.listCount = linkList.length; 
+          this.linkList = theLinkList;
+          this.listCount = theLinkList.length; 
         });
-      });
-    });
   }
+
 
   int _getLinkTypeInt(){
         switch (_selectedLinkType){
@@ -275,11 +302,25 @@ class HomePageState extends State<HomePage> {
         if (result !=0){
       _showAlertDialog('Estado', 'Enlace guardado exitosamente');
        updateLisView();
+      urlController.text ='';
+      descriptionController.text = '';
     }
     else{
        _showAlertDialog('Estado', 'Ocurrió un problema al salvar');
     }
 
+  }
+
+  void _delete(int id)async{
+    int result;
+    result = await databaseHelper.deleteLink(id);
+    if (result !=0){
+      _showAlertDialog('Estado', 'Enlace eliminado exitosamente');
+      updateLisView();
+    }
+    else{
+       _showAlertDialog('Estado', 'Ocurrió un problema al eliminar');
+    }
   }
 
     void _showAlertDialog(String title, String message){
@@ -296,11 +337,4 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  void updateUrl(){
-    debugPrint(urlController.text);
-  }
-
-  void updateDescription(){
-    debugPrint(descriptionController.text);
-  }
 }

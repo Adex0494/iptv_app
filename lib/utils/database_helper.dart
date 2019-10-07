@@ -52,6 +52,13 @@ class DatabaseHelper {
       return result;
     } 
 
+      //Fetch Operation: Get the entire Link Map List 
+      Future<List<Map<String,dynamic>>> getLinkMapList() async{
+      Database db = await this.database;
+      List<Map<String,dynamic>> result = await db.rawQuery('SELECT * FROM $linkTable ORDER BY $colId ASC');
+      return result;
+    } 
+
     //Insert link ...
     Future<int> insertLink (Link link) async{ 
       Database db = await this.database;
@@ -69,7 +76,7 @@ class DatabaseHelper {
     //Delete a link
     Future<int> deleteLink (int id) async{
       Database db = await this.database;
-      int result = await db.rawDelete('DELETE $linkTable WHERE $colId = $id');
+      int result = await db.rawDelete('DELETE FROM $linkTable WHERE $colId = $id');
       return result;
     }
 
@@ -84,6 +91,17 @@ class DatabaseHelper {
     //Get Link List from Link Map List by Type
     Future<List<Link>> getLinkListByType (int type) async{
       List<Map<String,dynamic>> linkMapList = await getLinkMapListByType(type);
+      List<Link> linkList = List<Link>();
+      int count = linkMapList.length;
+      for (int i=0;i<count;i++){
+        linkList.add(Link.toLink(linkMapList[i]));
+      }
+      return linkList;
+    }
+
+    //Get the entire Link List
+      Future<List<Link>> getLinkList () async{
+      List<Map<String,dynamic>> linkMapList = await getLinkMapList();
       List<Link> linkList = List<Link>();
       int count = linkMapList.length;
       for (int i=0;i<count;i++){
